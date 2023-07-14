@@ -2,6 +2,7 @@ import {
   Actor,
   CollisionType,
   Color,
+  DegreeOfFreedom,
   Engine,
   Input,
   vec,
@@ -9,11 +10,15 @@ import {
 
 import Assets from './Assets';
 
+type Direction = "up" | "down" | "left" | "right" | "up-right" | "up-left" | "down-right" | "down-left";
 export class Player extends Actor {
-    private jumpForce = 200;
     private jumpTime = 0.25;
     jumpTimeCounter = 0;
     isAirborne = false;
+    facing: Direction = "right";
+    keysHeld: Input.Keys[] = [];
+    private readonly jumpForce = 300;
+    private readonly moveForce: number = 300;
     constructor() {
         super({
             pos: vec(150, 150),
@@ -24,33 +29,54 @@ export class Player extends Actor {
             collisionType: CollisionType.Active,
         });
         this.jumpTimeCounter = this.jumpTime;
+        this.body.limitDegreeOfFreedom.push(DegreeOfFreedom.Rotation);
+        this.body.useGravity = true;
     }
 
     onInitialize() {
-        this.graphics.add(Assets.test.toSprite());
-        void Assets.test.load()
+        this.graphics.add(Assets.player.toSprite());
+        void Assets.player.load()
 
     }
 
     public update(engine: Engine, delta: number) {
-        // Handle horizontal movement
-        const moveSpeed = 200;
-        if (engine.input.keyboard.isHeld(Input.Keys.A)) {
-            this.vel.x = -moveSpeed;
-        } else if (engine.input.keyboard.isHeld(Input.Keys.D)) {
-            this.vel.x = moveSpeed;
+        super.update(engine, delta);
+
+        const keyboard = engine.input.keyboard;
+        const keysHeld = keyboard.getKeys();
+        this.keysHeld = keysHeld;
+
+        this.facing = getDirection(keysHeld);
+        this.handleMovement(keysHeld);
+        this.handleJumping(keyboard, delta);
+        // Handle dashing
+        if (keyboard.wasPressed(Input.Keys.Numpad0)) {
+            this.dash();
+        }
+    }
+    private handleMovement(keysHeld: Input.Keys[]) {
+        if (keysHeld.length > 0) {
+            if (this.facing === "right" && keysHeld.includes(Input.Keys.D))
+                this.vel.x = this.moveForce;
+            if (this.facing === "left" && keysHeld.includes(Input.Keys.A))
+                this.vel.x = -this.moveForce;
+            /* if (this.facing === "up" && keysHeld.includes(Input.Keys.W))
+                this.vel.y = -this.moveForce; */
+            if (this.facing === "down" && keysHeld.includes(Input.Keys.S))
+                this.vel.y = this.moveForce;
+
         } else {
             this.vel.x = 0;
         }
-
-        // Handle jumping
-        if (engine.input.keyboard.wasPressed(Input.Keys.Space) && !this.isAirborne) {
+    }
+    private handleJumping(keyboard: Input.Keyboard, delta: number) {
+        if (keyboard.wasPressed(Input.Keys.Space) && !this.isAirborne) {
             this.isAirborne = true;
             this.jumpTimeCounter = this.jumpTime;
             this.vel.y = -this.jumpForce;
         }
 
-        if (engine.input.keyboard.isHeld(Input.Keys.Space) && this.isAirborne) {
+        if (keyboard.isHeld(Input.Keys.Space) && this.isAirborne) {
             if (this.jumpTimeCounter > 0) {
                 this.vel.y = -this.jumpForce;
                 this.jumpTimeCounter -= delta / 1000;
@@ -59,8 +85,36 @@ export class Player extends Actor {
             }
         }
 
-        if (engine.input.keyboard.wasReleased(Input.Keys.Space)) {
+        if (keyboard.wasReleased(Input.Keys.Space)) {
             this.isAirborne = false;
         }
     }
+    private dash() {
+        //TODO
+    }
+}
+
+function getDirection(keysHeld: Input.Keys[]): Direction {
+    if (keysHeld.includes(Input.Keys.D) && keysHeld.includes(Input.Keys.W))
+        return "up-right";
+
+    if (keysHeld.includes(Input.Keys.A) && keysHeld.includes(Input.Keys.W))
+        return "up-left";
+
+    if (keysHeld.includes(Input.Keys.D) && keysHeld.includes(Input.Keys.S))
+        return "up-left";
+
+    if (keysHeld.includes(Input.Keys.A) && keysHeld.includes(Input.Keys.S))
+        return "down-left";
+
+    if (keysHeld.includes(Input.Keys.A))
+        return "left";
+
+    if (keysHeld.includes(Input.Keys.W))
+        return "up";
+
+    if (keysHeld.includes(Input.Keys.S))
+        return "down";
+
+    return "right";
 }

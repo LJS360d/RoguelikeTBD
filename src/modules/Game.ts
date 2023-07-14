@@ -17,7 +17,7 @@ class Game extends Engine {
         // its not even a react hook and im not in a .tsx, stupid fucking eslint
         // eslint-disable-next-line react-hooks/rules-of-hooks
         Physics.useRealisticPhysics();
-        Physics.gravity = vec(0, 500);
+        Physics.gravity = vec(0, 700);
         Physics.bodiesCanSleepByDefault = true;
         super({
             canvasElement: canvasRef,
@@ -61,19 +61,20 @@ class Game extends Engine {
             color: Color.Yellow,
             collisionType: CollisionType.Active
         });
+
         void this.start().then(() => {
             this.currentScene.add(box);
             this.currentScene.add(circle);
             this.currentScene.add(triangle);
             this.currentScene.add(ground);
-            this.currentScene.camera.strategy.lockToActor(this.player!)
+            this.currentScene.camera.strategy.lockToActor(this.player!);
+
         })
     }
 
     addPlayer(player: Player): void {
         this.player = player;
-        //this.player.body.limitDegreeOfFreedom.push(DegreeOfFreedom.Rotation)
-        this.player.body.useGravity = true;
+
         this.add(this.player);
 
     }
