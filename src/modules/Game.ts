@@ -67,12 +67,12 @@ class Game extends Engine {
             this.currentScene.add(triangle);
             this.currentScene.add(ground);
             this.currentScene.camera.strategy.lockToActor(this.player!)
+            this.currentScene.camera.zoom = 2;
         })
     }
 
     addPlayer(player: Player): void {
         this.player = player;
-        //this.player.body.limitDegreeOfFreedom.push(DegreeOfFreedom.Rotation)
         this.player.body.useGravity = true;
         this.add(this.player);
 

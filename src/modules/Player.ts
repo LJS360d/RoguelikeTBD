@@ -1,9 +1,11 @@
 import {
   Actor,
+  Animation,
   CollisionType,
-  Color,
+  DegreeOfFreedom,
   Engine,
   Input,
+  SpriteSheet,
   vec,
 } from 'excalibur';
 
@@ -20,15 +22,26 @@ export class Player extends Actor {
             vel: vec(0, 0),
             width: 32,
             height: 32,
-            color: Color.Cyan,
             collisionType: CollisionType.Active,
         });
         this.jumpTimeCounter = this.jumpTime;
+        this.body.limitDegreeOfFreedom.push(DegreeOfFreedom.Rotation)
     }
 
     onInitialize() {
-        this.graphics.add(Assets.test.toSprite());
-        void Assets.test.load()
+        void Assets.pippoSrc.load();
+        const spriteSheet = SpriteSheet.fromImageSource({
+            image: Assets.pippoSrc,
+            grid: {
+                columns: 5,
+                rows: 2,
+                spriteWidth: 32,
+                spriteHeight: 32
+            }
+        });
+        const anim = Animation.fromSpriteSheet(spriteSheet, [0, 5, 6, 7, 8, 9, 10], 200)
+        this.graphics.add(spriteSheet.getSprite(0, 0)!);
+        this.graphics.use(anim);
 
     }
 

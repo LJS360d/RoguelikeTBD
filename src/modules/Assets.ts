@@ -1,9 +1,9 @@
 import { ImageSource } from 'excalibur';
 
-import test from '../assets/react.svg';
+import pippo from '../assets/pippo.png';
 
 const Assets = {
-  test: new ImageSource(test)
+  pippoSrc: new ImageSource(pippo),
 };
 
 export default Assets;
